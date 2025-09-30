@@ -1,0 +1,67 @@
+# kubernetes/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-ban-hang-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: php-web
+  template:
+    metadata:
+      labels:
+        app: php-web
+    spec:
+      initContainers:
+      - name: db-initializer
+        image: mysql:8.0
+        command: ['sh', '-c', 'until mysql -h <tên-server-mysql>.mysql.database.azure.com -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "SELECT 1"; do echo "waiting for mysql..."; sleep 3; done; mysql -h <tên-server-mysql>.mysql.database.azure.com -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < /scripts/init.sql']
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: password
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: dbname
+        volumeMounts:
+        - name: mysql-init-script-volume
+          mountPath: /scripts/
+
+      containers:
+      - name: php-apache-container
+        image: youracr.azurecr.io/php-web-ban-hang:latest # Sẽ được pipeline thay thế
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_HOST
+          value: "<tên-server-mysql>.mysql.database.azure.com"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: password
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: dbname
+
+      volumes:
+      - name: mysql-init-script-volume
+        configMap:
+          name: mysql-init-script
