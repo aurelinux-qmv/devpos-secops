@@ -1,10 +1,9 @@
 <?php
-// Lấy thông tin kết nối từ các biến môi trường do Kubernetes cung cấp.
-// Đây là cách làm chuẩn trong môi trường container.
-$db_host      = getenv('DB_HOST');
-$db_database  = getenv('DB_NAME');
-$db_username  = getenv('DB_USER');
-$db_password  = getenv('DB_PASS'); // Sửa lại để khớp với file deployment
+// Cung cấp thông tin kết nối database thủ công để đơn giản hóa.
+$db_host      = 'mysql-devops-doan-19613.mysql.database.azure.com';
+$db_database  = 'flexibleserverdb';
+$db_username  = 'qvoadmin';
+$db_password  = 'tdc@123';
 
 // Cập nhật mảng config
 $configDB = array();

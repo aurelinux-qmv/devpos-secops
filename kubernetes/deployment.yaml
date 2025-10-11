@@ -43,24 +43,6 @@ spec:
         image: __IMAGE_PLACEHOLDER__
         ports:
         - containerPort: 80
-        env:
-        - name: DB_HOST
-          value: "mysql-devops-doan-19613.mysql.database.azure.com"
-        - name: DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: mysql-credentials
-              key: username
-        - name: DB_PASS # Đã sửa ở đây
-          valueFrom:
-            secretKeyRef:
-              name: mysql-credentials
-              key: password
-        - name: DB_NAME
-          valueFrom:
-            secretKeyRef:
-              name: mysql-credentials
-              key: dbname
 
       volumes:
       - name: mysql-init-script-volume

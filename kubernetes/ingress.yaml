@@ -4,6 +4,8 @@ kind: Ingress
 metadata:
   name: web-ingress
 spec:
+  # Dòng này chỉ định ai sẽ xử lý Ingress
+  ingressClassName: nginx
   rules:
   - http:
       paths:
