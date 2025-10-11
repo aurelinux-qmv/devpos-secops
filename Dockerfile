@@ -33,6 +33,9 @@ WORKDIR /var/www
 # Sao chép mã nguồn và gán quyền sở hữu cho www-data
 COPY --chown=www-data:www-data ./maytinh .
 
+# THÊM DÒNG NÀY VÀO: Copy certificate vào một nơi an toàn trong container
+COPY DigiCertGlobalRootG2.crt.pem /etc/ssl/certs/
+
 # Sao chép các file cấu hình cần thiết
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
