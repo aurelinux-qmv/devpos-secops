@@ -16,7 +16,8 @@ spec:
       initContainers:
       - name: db-initializer
         image: mysql:8.0
-        command: ['sh', '-c', 'until mysql -h <tên-server-mysql>.mysql.database.azure.com -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "SELECT 1"; do echo "waiting for mysql..."; sleep 3; done; mysql -h <tên-server-mysql>.mysql.database.azure.com -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < /scripts/init.sql']
+        # Sửa cả 2 chỗ trong dòng command này
+        command: ['sh', '-c', 'until mysql -h mysql-devops-doan-19613.mysql.database.azure.com -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "SELECT 1"; do echo "waiting for mysql..."; sleep 3; done; mysql -h mysql-devops-doan-19613.mysql.database.azure.com -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < /scripts/init.sql']
         env:
         - name: DB_USER
           valueFrom:
@@ -44,7 +45,7 @@ spec:
         - containerPort: 80
         env:
         - name: DB_HOST
-          value: "<tên-server-mysql>.mysql.database.azure.com"
+          value: "mysql-devops-doan-19613.mysql.database.azure.com"
         - name: DB_USER
           valueFrom:
             secretKeyRef:
