@@ -23,7 +23,6 @@ jobs:
         password: ${{ secrets.ACR_PASSWORD }}
     
     - name: Build and push Docker image
-      id: build_image # Thêm ID cho bước này
       uses: docker/build-push-action@v4
       with:
         context: .
@@ -34,7 +33,8 @@ jobs:
     - name: Scan image for vulnerabilities with Trivy
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: '${{ steps.build_image.outputs.digest }}' # Quét theo digest cho chính xác
+        # Sửa lại dòng này để quét theo tag, không quét theo digest
+        image-ref: '${{ secrets.ACR_NAME }}.azurecr.io/php-web-ban-hang:${{ github.sha }}'
         format: 'table'
         exit-code: '1'
         ignore-unfixed: true
@@ -61,7 +61,6 @@ jobs:
         resource-group: ${{ secrets.RESOURCE_GROUP }}
         cluster-name: ${{ secrets.CLUSTER_NAME }}
 
-    # ----- BƯỚC MỚI ĐƯỢC THÊM VÀO -----
     - name: Replace Image Placeholder in deployment.yaml
       run: |
         IMAGE_NAME="${{ secrets.ACR_NAME }}.azurecr.io/php-web-ban-hang:${{ github.sha }}"
@@ -75,4 +74,3 @@ jobs:
           kubernetes/deployment.yaml
           kubernetes/service.yaml
           kubernetes/ingress.yaml
-        # Không cần 'images' nữa vì đã thay thế trực tiếp
