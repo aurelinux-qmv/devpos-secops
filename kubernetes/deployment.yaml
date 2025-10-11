@@ -16,15 +16,15 @@ spec:
       initContainers:
       - name: db-initializer
         image: mysql:8.0
-        # Sửa cả 2 chỗ trong dòng command này
-        command: ['sh', '-c', 'until mysql -h mysql-devops-doan-19613.mysql.database.azure.com -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "SELECT 1"; do echo "waiting for mysql..."; sleep 3; done; mysql -h mysql-devops-doan-19613.mysql.database.azure.com -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < /scripts/init.sql']
+        # Đã sửa lại $DB_PASSWORD thành $DB_PASS cho đúng
+        command: ['sh', '-c', 'until mysql -h mysql-devops-doan-19613.mysql.database.azure.com -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "SELECT 1"; do echo "waiting for mysql..."; sleep 3; done; mysql -h mysql-devops-doan-19613.mysql.database.azure.com -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < /scripts/init.sql']
         env:
         - name: DB_USER
           valueFrom:
             secretKeyRef:
               name: mysql-credentials
               key: username
-        - name: DB_PASS
+        - name: DB_PASS # Đã sửa ở đây
           valueFrom:
             secretKeyRef:
               name: mysql-credentials
@@ -40,7 +40,7 @@ spec:
 
       containers:
       - name: php-apache-container
-        image: php-web-ban-hang # Sẽ được pipeline thay thế
+        image: php-web-ban-hang # Tên image rút gọn
         ports:
         - containerPort: 80
         env:
@@ -51,7 +51,7 @@ spec:
             secretKeyRef:
               name: mysql-credentials
               key: username
-        - name: DB_PASSWORD
+        - name: DB_PASS # Đã sửa ở đây
           valueFrom:
             secretKeyRef:
               name: mysql-credentials
