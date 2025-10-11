@@ -40,7 +40,7 @@ spec:
 
       containers:
       - name: php-apache-container
-        image: php-web-ban-hang # Tên image rút gọn
+        image: __IMAGE_PLACEHOLDER__
         ports:
         - containerPort: 80
         env:

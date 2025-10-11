@@ -21,8 +21,9 @@ jobs:
         registry: ${{ secrets.ACR_NAME }}.azurecr.io
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }}
-
+    
     - name: Build and push Docker image
+      id: build_image # Thêm ID cho bước này
       uses: docker/build-push-action@v4
       with:
         context: .
@@ -33,7 +34,7 @@ jobs:
     - name: Scan image for vulnerabilities with Trivy
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: '${{ secrets.ACR_NAME }}.azurecr.io/php-web-ban-hang:${{ github.sha }}'
+        image-ref: '${{ steps.build_image.outputs.digest }}' # Quét theo digest cho chính xác
         format: 'table'
         exit-code: '1'
         ignore-unfixed: true
@@ -44,7 +45,7 @@ jobs:
     name: Deploy to AKS
     runs-on: ubuntu-latest
     needs: build-and-scan
-
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -60,6 +61,12 @@ jobs:
         resource-group: ${{ secrets.RESOURCE_GROUP }}
         cluster-name: ${{ secrets.CLUSTER_NAME }}
 
+    # ----- BƯỚC MỚI ĐƯỢC THÊM VÀO -----
+    - name: Replace Image Placeholder in deployment.yaml
+      run: |
+        IMAGE_NAME="${{ secrets.ACR_NAME }}.azurecr.io/php-web-ban-hang:${{ github.sha }}"
+        sed -i "s|__IMAGE_PLACEHOLDER__|${IMAGE_NAME}|g" kubernetes/deployment.yaml
+
     - name: Deploy to AKS
       uses: Azure/k8s-deploy@v4
       with:
@@ -68,5 +75,4 @@ jobs:
           kubernetes/deployment.yaml
           kubernetes/service.yaml
           kubernetes/ingress.yaml
-        images: |
-          ${{ secrets.ACR_NAME }}.azurecr.io/php-web-ban-hang:${{ github.sha }}
+        # Không cần 'images' nữa vì đã thay thế trực tiếp
