@@ -40,7 +40,7 @@ spec:
 
       containers:
       - name: php-apache-container
-        image: youracr.azurecr.io/php-web-ban-hang:latest # Sẽ được pipeline thay thế
+        image: php-web-ban-hang # Sẽ được pipeline thay thế
         ports:
         - containerPort: 80
         env:
