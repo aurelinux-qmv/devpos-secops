@@ -5,56 +5,49 @@ on:
   push:
     branches:
       - main
-  # Thêm pull_request để quét code ngay khi có yêu cầu thay đổi
   pull_request:
     branches:
       - main
 
 jobs:
-  # ----- CÔNG VIỆC MỚI ĐƯỢC THÊM VÀO -----
   codeql:
     name: Analyze Code with CodeQL
     runs-on: ubuntu-latest
     permissions:
-      security-events: write # Cấp quyền để CodeQL ghi kết quả vào tab Security
+      security-events: write
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4 # Nâng cấp cả checkout lên v4 cho mới nhất
 
-    # 1. Khởi tạo CodeQL và tạo database từ mã nguồn
+    # 1. Khởi tạo CodeQL - Đã nâng cấp lên v3
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
-        languages: 'php' # Chỉ định ngôn ngữ cần quét là PHP
+        languages: 'php'
 
-    # 2. CodeQL sẽ tự động build code để phân tích (không cần cấu hình thêm cho PHP)
-    # Nếu là ngôn ngữ biên dịch như Java/C#, bạn sẽ cần thêm bước build ở đây.
-
-    # 3. Chạy phân tích và tải kết quả lên GitHub
+    # 2. Chạy phân tích - Đã nâng cấp lên v3
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
 
-  # ----- CÔNG VIỆC CŨ (Build & Scan) -----
   build-and-scan:
     name: Build & Scan Image
     runs-on: ubuntu-latest
-    # Thêm điều kiện để job này chỉ chạy khi push lên nhánh main
     if: github.event_name == 'push'
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4 # Nâng cấp cả checkout lên v4
 
     - name: Log in to Azure Container Registry
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3 # Nâng cấp lên v3
       with:
         registry: ${{ secrets.ACR_NAME }}.azurecr.io
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }}
     
     - name: Build and push Docker image
-      uses: docker/build-push-action@v4
+      uses: docker/build-push-action@v5 # Nâng cấp lên v5
       with:
         context: .
         file: ./Dockerfile
@@ -71,18 +64,15 @@ jobs:
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
 
-  # ----- CÔNG VIỆC CŨ (Deploy) -----
   deploy:
     name: Deploy to AKS
     runs-on: ubuntu-latest
-    # Thêm điều kiện để job này chỉ chạy khi push lên nhánh main
     if: github.event_name == 'push'
-    # Thêm 'codeql' vào needs để đảm bảo deploy chỉ xảy ra khi code đã an toàn
     needs: [build-and-scan, codeql]
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4 # Nâng cấp cả checkout lên v4
 
     - name: Azure Login
       uses: azure/login@v1
