@@ -23,12 +23,8 @@ RUN apt-get update && \
         php${PHP_VERSION}-fpm php${PHP_VERSION}-cli php${PHP_VERSION}-common php${PHP_VERSION}-mysql \
         php${PHP_VERSION}-curl php${PHP_VERSION}-mbstring php${PHP_VERSION}-xml php${PHP_VERSION}-gd \
     && \
-    # ----- PHẦN GÀI BẪY TRIVY -----
-    # Cố tình cài đặt một phiên bản curl cũ có lỗ hổng bảo mật nghiêm trọng
-    apt-get install -y --allow-downgrades curl=7.88.1-10+deb12u5 libcurl4=7.88.1-10+deb12u5 \
-    && \
-    # 4. Dọn dẹp
-    apt-get clean && \
+    # 4. Dọn dẹp triệt để
+    apt-get purge -y --auto-remove curl wget gnupg2 lsb-release ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 # --- CẤU HÌNH THƯ MỤC VÀ QUYỀN ---
@@ -37,7 +33,7 @@ WORKDIR /var/www
 # Sao chép mã nguồn và gán quyền sở hữu cho www-data
 COPY --chown=www-data:www-data ./maytinh .
 
-# Copy certificate vào một nơi an toàn trong container
+# THÊM DÒNG NÀY VÀO: Copy certificate vào một nơi an toàn trong container
 COPY DigiCertGlobalRootG2.crt.pem /etc/ssl/certs/
 
 # Sao chép các file cấu hình cần thiết
@@ -51,8 +47,15 @@ RUN mkdir -p /run/php && \
     chown -R www-data:www-data /var/lib/nginx
 
 # --- CHẠY CONTAINER ---
+# Chuyển sang người dùng www-data
+# USER www-data
+
 # Mở port 80
 EXPOSE 80
+
+# Healthcheck
+HEALTHCHECK --interval=5s --timeout=3s \
+  CMD curl --fail http://127.0.0.1/ || exit 1
 
 # Lệnh sẽ được chạy khi container khởi động
 CMD /usr/bin/supervisord -n
