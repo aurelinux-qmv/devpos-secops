@@ -13,15 +13,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Lấy toàn bộ lịch sử commit để SonarCloud phân tích chính xác hơn
           fetch-depth: 0
+      
+      # BƯỚC NÀY ĐƯỢC THAY THẾ
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          # Secret mặc định của GitHub, cần để action tương tác với repo
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Secret bạn đã tạo ở bước trước
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          # Thêm tham số này để action chờ kết quả Quality Gate
+          args: >
+            -Dsonar.pullrequest.provider=github
+            -Dsonar.pullrequest.github.repository=${{ github.repository }}
 
   build-and-scan:
     name: Build & Scan Image
