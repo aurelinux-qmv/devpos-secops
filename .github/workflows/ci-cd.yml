@@ -15,17 +15,22 @@ jobs:
         with:
           fetch-depth: 0
       
-      # BƯỚC NÀY ĐƯỢC THAY THẾ
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # ----- BƯỚC MỚI: "TRẠM GÁC" KIỂM TRA CỔNG CHẤT LƯỢNG -----
+      - name: SonarCloud Quality Gate check
+        # Chỉ chạy bước này khi sự kiện là 'push' (không chạy cho Pull Request)
+        if: github.event_name == 'push'
+        uses: SonarSource/sonarcloud-quality-gate-action@master
+        # Dừng pipeline nếu Cổng Chất lượng không đạt
         with:
-          # Thêm tham số này để action chờ kết quả Quality Gate
-          args: >
-            -Dsonar.pullrequest.provider=github
-            -Dsonar.pullrequest.github.repository=${{ github.repository }}
+          scanID: ${{ steps.sonarcloud-scan.outputs.scanId }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   build-and-scan:
     name: Build & Scan Image
